@@ -5,8 +5,8 @@ import socket
 try:	
 	#setting up new datagram socket
 	s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-	#timeout after 10 seconds
-	s.settimeout(10)
+	#timeout after 30 seconds
+	s.settimeout(30)
 	#set socket to listen on UDP port 7070 
 	s.bind(('', 7070))
 except Exception as e:

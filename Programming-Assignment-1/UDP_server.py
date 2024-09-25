@@ -37,7 +37,7 @@ else:
 	try:
 		#receive initial message and validate 
 		initMessage, (client_ip, client_port) = s.recvfrom(256)
-		if validate_HELLO_message(initMessage.decode()):
+		if validate_HELLO_message(initMessage.decode('utf-8')):
 				s.sendto(f'OK {initMessage.split()[1]}\n', (client_ip, client_port))
 		else:
 			s.sendto(f'RESET {initMessage.split()[1]}\n', (client_ip, client_port))

@@ -7,14 +7,11 @@ connection_established = False
 
 #initial message validation function
 def validate_HELLO_message(message):
-	#splits message into individual parts
-	parts = message.strip().split()
-	match parts:
-		#if the first part is HELLO and the second part contains a 4 digit connection id, then true
-		case ["HELLO", connection_id] if connection_id.isdigit() and len(connection_id) == 4:
-			return True, connection_id
-		case _:
-			return False, parts[1] if len(parts) > 1 else "NO CONNECTION ID"
+    parts = message.split()
+    if len(parts) == 2 and parts[0] == "HELLO" and parts[1].isdigit() and len(parts[1]) == 4:
+        return True, parts[1]
+    else:
+        return False, parts[1] if len(parts) > 1 else "NO CONNECTION ID"
 
 
 try:	
@@ -51,7 +48,7 @@ else:
 		while connection_established:
 			#messages logged with data, incoming address logged with addr, data decoded using utf8 into msg var
 			data, addr = s.recvfrom(256)
-			msg = data.decode('utf-8')
+			msg = data.decode('utf-8').strip()
 
 			s.sendto(f'You sent: {msg}'.encode('utf-8'), addr)
 

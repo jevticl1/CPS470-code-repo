@@ -8,7 +8,7 @@ connection_established = False
 #initial message validation function
 def validate_HELLO_message(message):
 	#splits message into individual parts
-	parts = data.split()
+	parts = message.split()
 	match parts:
 		#if the first part is HELLO and the second part contains a 4 digit connection id, then true
 		case ["HELLO", connection_id] if connection_id.isdigit() and len(connection_id) == 4:

@@ -38,9 +38,9 @@ else:
 		#receive initial message and validate 
 		initMessage, (client_ip, client_port) = s.recvfrom(256)
 		if validate_HELLO_message(initMessage.decode()):
-				s.sendto(f'OK {initMessage.split()[1]}\n')
+				s.sendto(f'OK {initMessage.split()[1]}\n', (client_ip, client_port))
 		else:
-			s.sendto(f'RESET {initMessage.split()[1]}\n')
+			s.sendto(f'RESET {initMessage.split()[1]}\n', (client_ip, client_port))
 
 		#keep socket open for any messages to come through
 		while connection_established == True:

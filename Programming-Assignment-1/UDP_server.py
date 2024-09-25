@@ -8,14 +8,13 @@ connection_established = False
 #initial message validation function
 def validate_HELLO_message(message):
 	#splits message into individual parts
-	parts = message.split()
+	parts = message.strip().split()
 	match parts:
 		#if the first part is HELLO and the second part contains a 4 digit connection id, then true
 		case ["HELLO", connection_id] if connection_id.isdigit() and len(connection_id) == 4:
-			connection_established = True
-			return True
+			return True, connection_id
 		case _:
-			return False
+			return False, parts[1] if len(parts) > 1 else "NO CONNECTION ID"
 
 
 try:	
@@ -37,18 +36,24 @@ else:
 	try:
 		#receive initial message and validate 
 		initMessage, (client_ip, client_port) = s.recvfrom(256)
-		if validate_HELLO_message(initMessage.decode('utf-8')):
-				s.sendto(f'OK {initMessage.split()[1]}\n'.encode('utf-8'), (client_ip, client_port))
+		decoded_message = initMessage.decode('utf-8').strip()
+		is_valid, connection_id = validate_HELLO_message(decoded_message)
+
+		if is_valid:
+			response = f'OK {connection_id}\n'
+			connection_established = True
 		else:
-			s.sendto(f'RESET {initMessage.split()[1]}\n'.encode('utf-8'), (client_ip, client_port))
+			response = f'RESET {connection_id}\n'
+			
+		s.sendto(response.encode('utf-8'), (client_ip, client_port))
 
 		#keep socket open for any messages to come through
-		while connection_established == True:
-			#any new messages logged into data var and decoded using utf8 into msg var
-			data = s.recvfrom(256)
+		while connection_established:
+			#messages logged with data, incoming address logged with addr, data decoded using utf8 into msg var
+			data, addr = s.recvfrom(256)
 			msg = data.decode('utf-8')
 
-			s.sendto(f'You sent: {msg}'.encode('utf-8'), (client_ip, client_port))
+			s.sendto(f'You sent: {msg}'.encode('utf-8'), addr)
 
 	except TimeoutError:
 		print('Timed out waiting for connections.')

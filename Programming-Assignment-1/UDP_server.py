@@ -50,12 +50,12 @@ else:
 			data, addr = s.recvfrom(256)
 			msg = data.decode('utf-8').strip()
 
-			s.sendto(f'You sent: {msg}'.encode('utf-8'), addr)
+			s.sendto(f'You sent: {msg}\n'.encode('utf-8'), addr)
 
 	except TimeoutError:
-		print('Timed out waiting for connections.')
+		print(f'Timed out waiting for connections.\n')
 	except Exception as e:
-		print(f'Exception: {e}')
+		print(f'Exception: {e}\n')
 
 #close socket when not in use and reset connection_established var
 finally:

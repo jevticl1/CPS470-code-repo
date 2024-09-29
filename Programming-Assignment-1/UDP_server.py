@@ -53,7 +53,7 @@ def udp_server(server_port):
 
 				message_str = message.decode('utf-8').strip() #removes any whitespace or newline characters from message
 
-				if message_str.startswith("HELLO ") and message_str[6:].isdigit():
+				if message_str.startswith("HELLO ") and message_str[6:].isdigit() and len(message_str[6:]) == 4:
 					connection_id = message_str[6:]
 
 					if connection_id in used_connection_ids:

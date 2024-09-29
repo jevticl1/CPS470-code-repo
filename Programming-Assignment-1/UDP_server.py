@@ -16,6 +16,7 @@ cleanup_interval = 10 #10 seconds
 
 def remove_connections():
 	while True:
+		time.sleep(cleanup_interval)
 		current_time = time.time()
 		
 		#iterate through each connection id to identify timed out connections and remove
@@ -25,9 +26,6 @@ def remove_connections():
 			del used_connection_ids[conn_id]
 			print(f"Removed stale connection ID: {conn_id}")
 
-		#run function again after the cleanup interval
-		threading.Timer(cleanup_interval, remove_connections).start()
-
 def udp_server(server_port):
 	server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
@@ -35,8 +33,9 @@ def udp_server(server_port):
 		server_socket.bind(('', server_port))
 		print(f"Server listening on port {server_port}\n")
 
-		#start the cleanup cycle
-		remove_connections()
+		#start the cleanup cycle in a separate thread
+		cleanup_thread = threading.Thread(target = remove_connections, daemon = True)
+		cleanup_thread.start()
 
 		last_request_time = time.time()
 
@@ -77,10 +76,6 @@ def udp_server(server_port):
 	except Exception as e:
 		print(f"An error occurred: {e}\n")
 
-	except ValueError:
-		print("Server port must be an integer.")
-		sys.exit(1)
-		
 	finally:
 		#closing socket when server shuts down
 		print("Closing server socket.")
@@ -92,8 +87,13 @@ if __name__ == "__main__":
 		print("Usage: python UDP_server.py <Server_Port>")
 		sys.exit(1)
 
-	server_port = int(sys.argv[1])
-	udp_server(server_port)
+	try:
+		server_port = int(sys.argv[1])
+		udp_server(server_port)
+		
+	except ValueError:
+		print("Server port must be an integer.")
+		sys.exit(1)
 
 
 

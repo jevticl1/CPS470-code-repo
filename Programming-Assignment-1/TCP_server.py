@@ -28,23 +28,30 @@ def remove_connections():
 def handle_client(client_socket, client_address):
     try:
         client_socket.settimeout(60)  # 1 minute timeout for receiving data
-        message = client_socket.recv(1024).decode('utf-8').strip()
+        message = b""
+        
+        # Accumulate message data until a full message is received
+        while not message.endswith(b"\n"):
+            data = client_socket.recv(1024)
+            if not data:
+                break
+            message += data
 
-        if message.startswith("HELLO ") and message[6:].isdigit() and len(message[6:]) == 4:
-            connection_id = message[6:]
+        message_str = message.decode('utf-8').strip()
+
+        if message_str.startswith("HELLO ") and message_str[6:].isdigit() and len(message_str[6:]) == 4:
+            connection_id = message_str[6:]
 
             if connection_id in used_connection_ids:
                 response = f"RESET {connection_id}\n"
             else:
-                # add connection id to list of used connection ids
                 used_connection_ids[connection_id] = time.time()
                 client_ip, client_port = client_address
                 response = f"OK {connection_id} {client_ip} {client_port}\n"
 
             client_socket.sendall(response.encode('utf-8'))
         else:
-            # malformed message error
-            print(f"Ignoring malformed message from {client_address}: {message}")
+            print(f"Ignoring malformed message from {client_address}: {message_str}")
 
     except socket.timeout:
         print(f"Client {client_address} timed out.")

@@ -4,6 +4,28 @@ import socket
 import sys
 
 def tcp_client(server_ip, server_port, connection_id):
+    try:
+        server_ip = socket.gethostbyname(server_ip)  # Validate hostname/IP
+    except socket.gaierror:
+        print(f"Invalid IP address/hostname: {server_ip}")
+        return
+    
+    try:
+        server_port = int(server_port)
+        if not (0 <= server_port <= 65535):
+            raise ValueError("Port number must be between 0 and 65535")
+    except ValueError:
+        print(f"Invalid port number: {server_port}")
+        return
+
+    try:
+        connection_id = int(connection_id)
+        if connection_id < 0:
+            raise ValueError("Connection ID must be a non-negative integer")
+    except ValueError:
+        print(f"Invalid connection ID: {connection_id}")
+        return
+    
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     client_socket.settimeout(60)
 

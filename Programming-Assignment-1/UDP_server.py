@@ -67,6 +67,12 @@ def udp_server(server_port):
 							client_ip, client_port = client_address
 							response = f"OK {connection_id} {client_ip} {client_port}\n"
 							print(f"Connection established with ID {connection_id} from {client_address}.")
+					else:
+						#add connection id to list of used connection ids
+						used_connection_ids[connection_id] = time.time()
+						client_ip, client_port = client_address
+						response = f"OK {connection_id} {client_ip} {client_port}\n"
+						print(f"Connection established with ID {connection_id} from {client_address}.")
 
 					server_socket.sendto(response.encode('utf-8'), client_address)
 				else:

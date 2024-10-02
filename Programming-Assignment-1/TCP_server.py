@@ -43,12 +43,19 @@ def handle_client(client_socket, client_address):
             connection_id = message_str[6:]
 
             if connection_id in used_connection_ids:
-                response = f"RESET {connection_id}\n"
+                # Only reset if connection is still active
+                if time.time() - used_connection_ids[connection_id] <= connection_id_timeout:
+                    response = f"RESET {connection_id}\n"
+                else:
+                    # Allow reuse if it has timed out
+                    used_connection_ids[connection_id] = time.time()
+                    client_ip, client_port = client_address
+                    response = f"OK {connection_id} {client_ip} {client_port}\n"
             else:
                 used_connection_ids[connection_id] = time.time()
                 client_ip, client_port = client_address
                 response = f"OK {connection_id} {client_ip} {client_port}\n"
-
+                
             client_socket.sendall(response.encode('utf-8'))
         else:
             print(f"Ignoring malformed message from {client_address}: {message_str}")

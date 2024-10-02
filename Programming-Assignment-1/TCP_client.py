@@ -25,26 +25,34 @@ def tcp_client(server_ip, server_port, connection_id):
     except ValueError:
         print(f"Invalid connection ID: {connection_id}")
         return
-    
+
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     client_socket.settimeout(60)
 
     message = f"HELLO {connection_id}\n"
-    server_address = (server_ip, int(server_port))
+    server_address = (server_ip, server_port)
 
     try:
-        # Connect to the server
         client_socket.connect(server_address)
-
-        # Send the message
         client_socket.sendall(message.encode('utf-8'))
 
-        # Receive the response
-        response = client_socket.recv(1024)
+        # Handle multiple segments by accumulating response data until a full message is received
+        response = b""
+        while not response.endswith(b"\n"):
+            data = client_socket.recv(1024)
+            if not data:
+                break
+            response += data
+
         response_str = response.decode('utf-8').strip()
 
+        # Check if the OK response has the same connection ID
         if response_str.startswith("OK"):
-            print(f"Connection established {response_str[3:]}\n")
+            response_id = response_str.split()[1]
+            if response_id == str(connection_id):
+                print(f"Connection established {response_str[3:]}\n")
+            else:
+                print(f"Connection error: expected ID {connection_id}, but got {response_id}")
         elif response_str.startswith("RESET"):
             print(f"Connection error {connection_id}")
         else:

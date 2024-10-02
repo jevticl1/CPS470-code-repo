@@ -22,8 +22,9 @@ def remove_connections():
 		to_remove = [conn_id for conn_id, timestamp in used_connection_ids.items() if current_time - timestamp > connection_id_timeout]
 
 		for conn_id in to_remove:
-			del used_connection_ids[conn_id]
-			print(f"Removed stale connection ID: {conn_id}")
+			if conn_id in used_connection_ids:
+				del used_connection_ids[conn_id]
+				print(f"Removed stale connection ID: {conn_id}")
 
 def udp_server(server_port):
 	server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -57,13 +58,15 @@ def udp_server(server_port):
 					connection_id = message_str[6:]
 
 					if connection_id in used_connection_ids:
-						response = f"RESET {connection_id}\n"
-					else:
-						#add connection id to list of used connection ids
-						used_connection_ids[connection_id] = time.time()
-						client_ip, client_port = client_address
-						response = f"OK {connection_id} {client_ip} {client_port}\n"
-						print(f"Connection established with ID {connection_id} from {client_address}.")
+						if time.time() - used_connection_ids[connection_id] <= connection_id_timeout:
+							#RESET if connection is still active
+							response = f"RESET {connection_id}\n"
+						else:
+							#add connection id to list of used connection ids
+							used_connection_ids[connection_id] = time.time()
+							client_ip, client_port = client_address
+							response = f"OK {connection_id} {client_ip} {client_port}\n"
+							print(f"Connection established with ID {connection_id} from {client_address}.")
 
 					server_socket.sendto(response.encode('utf-8'), client_address)
 				else:
